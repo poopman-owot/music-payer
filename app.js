@@ -1,6 +1,6 @@
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioContext = new AudioContext();
 function playNote(frequency, duration) {
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  const audioContext = new AudioContext();
   const oscillator = audioContext.createOscillator();
 
   oscillator.connect(audioContext.destination);
