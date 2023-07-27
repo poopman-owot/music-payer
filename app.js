@@ -1,3 +1,4 @@
+Permissions.can_edit_tile=_=>{return true}
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioContext = new AudioContext();
 function playNote(frequency, duration) {
