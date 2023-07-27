@@ -75,8 +75,11 @@ function calculateNoteDuration(bpm, noteType) {
 }
 
 var musicLoop;
-
+let savedParams = [120, 9];
+let shouldLoop = false;
 function runFunctionAtBPM(bpm, func, range) {
+shouldLoop = true;
+savedParams = [bpm,range]
   const beatsPerSecond = bpm / 60;
   const millisecondsPerBeat = 1000 / beatsPerSecond;
 
@@ -134,3 +137,12 @@ function PlayMusic(range) {
 
 
 }
+document.addEventListener("dblclick", function(){
+if(shouldLoop){
+clearInterval(musicLoop);
+shouldLoop = false;
+}
+else{
+runFunctionAtBPM(savedParams[0], PlayMusic,savedParams[1])
+}
+});
