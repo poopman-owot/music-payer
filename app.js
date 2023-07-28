@@ -1,6 +1,9 @@
-Permissions.can_edit_tile=_=>{return true}
+Permissions.can_edit_tile = _ => {
+  return true
+}
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioContext = new AudioContext();
+
 function playNote(frequency, duration) {
   const oscillator = audioContext.createOscillator();
 
@@ -12,27 +15,33 @@ function playNote(frequency, duration) {
   }, duration);
 }
 
-function playNoteByLetter(note, octave, bpm, noteType) {
-  if (noteType == false) {
-    return
+function playNoteByLetter(note, octave, bpm, noteType, accidental = '') {
+  if (noteType === false) {
+    return;
   }
+
   const notes = {
     C: 261.63,
-    'C#': 277.18,
+    'C♯': 277.18,
+    'D♭': 277.18,
     D: 293.66,
-    'D#': 311.13,
+    'D♯': 311.13,
+    'E♭': 311.13,
     E: 329.63,
     F: 349.23,
-    'F#': 369.99,
+    'F♯': 369.99,
+    'G♭': 369.99,
     G: 392.00,
-    'G#': 415.30,
+    'G♯': 415.30,
+    'A♭': 415.30,
     A: 440.00,
-    'A#': 466.16,
+    'A♯': 466.16,
+    'B♭': 466.16,
     B: 493.88,
   };
-
-  const noteName = note.toUpperCase();
-  if (!Object.keys(notes).includes(noteName)) {
+//console.log((note + accidental).toUpperCase())
+  const noteNameWithAccidental = (note + accidental).toUpperCase();
+  if (!Object.keys(notes).includes(noteNameWithAccidental)) {
     console.error('Invalid note name!');
     return;
   }
@@ -43,8 +52,7 @@ function playNoteByLetter(note, octave, bpm, noteType) {
     return;
   }
 
-  const frequency = notes[noteName] * Math.pow(2, parsedOctave - 4);
-
+  const frequency = notes[noteNameWithAccidental] * Math.pow(2, parsedOctave - 4);
   const noteDuration = calculateNoteDuration(bpm, noteType);
 
   playNote(frequency, noteDuration);
@@ -75,74 +83,67 @@ function calculateNoteDuration(bpm, noteType) {
 }
 
 var musicLoop;
-let savedParams = [120, 9];
+let savedParams = [120, 15,3];
 let shouldLoop = false;
-function runFunctionAtBPM(bpm, func, range) {
-shouldLoop = true;
-savedParams = [bpm,range]
+
+function runFunctionAtBPM(bpm, func, range, startingLowCoctive) {
+  shouldLoop = true;
+  savedParams = [bpm, range,startingLowCoctive]
   const beatsPerSecond = bpm / 60;
   const millisecondsPerBeat = 1000 / beatsPerSecond;
 
   function executeFunction() {
-    func(range);
+    func(range,startingLowCoctive);
   }
 
-musicLoop =  setInterval(executeFunction, millisecondsPerBeat);
+  musicLoop = setInterval(executeFunction, millisecondsPerBeat);
 }
 
 function getMusicChar(char = getChar()) {
   if (" _|".includes(char)) {
     return false
+  } else if (char == "𝄓") {
+    clearInterval(musicLoop);
+    return false
   }
-else if (char == "𝄓") {
-clearInterval(musicLoop);
-return false
+else if (char == "♺"){
+let [a,b,c,d] = cursorCoords;
+const amount = getLink(a,b,c,d) ? getLink(a,b,c,d).url : "";
+w.moveCursor("left", 0, amount);
+getMusicChar()
 }
   const musicNotes = "𝅝𝅗𝅥♩♪♬";
   const specifyNote = musicNotes.includes(char);
   return specifyNote ? char : "𝅝";
 }
 // Example usage: Execute the function every beat at 120 BPM
-function PlayMusic(range) {
+function PlayMusic(range,startingLowCoctive) {
   w.moveCursor("right");
   let [X, Y, x, y] = cursorCoords;
   const orderedNotes = ["C", "D", "E", "F", "G", "A", "B"];
-  let octave = 4; // Fix the variable name for octave
-
-
-  w.moveCursor("down", 0, range);
+  let octave;
   for (let i = 0; i < range; i++) {
+        octave = (~~((i)/7))+startingLowCoctive;
 
-    if (i % 7 === 0 && i !== 0) {
-      octave--;
-    }
-  }
-
-  for (let i = 0; i < (range * 2); i++) {
-
-    if (i % 7 === 0 && i !== 0) {
-      octave++;
-    }
+let [a,b,c,d] = cursorCoords
+const accent = getLink(a,b,c,d) ? getLink(a,b,c,d).url : "";
     const currentOctave = octave; // Store the current octave in a separate variable
     if (getMusicChar()) {
-      console.log(orderedNotes[(i+(9-range)) % 7], currentOctave, getMusicChar())
-
-      playNoteByLetter(orderedNotes[(i+(9-range)) % 7], currentOctave, 120, getMusicChar());
+console.log(orderedNotes[i%7],currentOctave,)
+      playNoteByLetter(orderedNotes[i%7], currentOctave, 120, getMusicChar(),accent);
     }
     w.moveCursor("up");
   }
 
   w.moveCursor("down", 0, range);
-  octave = 4;
 
 
 }
-document.addEventListener("dblclick", function(){
-if(shouldLoop){
-clearInterval(musicLoop);
-shouldLoop = false;
-}
-else{
-runFunctionAtBPM(savedParams[0], PlayMusic,savedParams[1])
-}
+document.addEventListener("dblclick", function() {
+  if (shouldLoop) {
+    clearInterval(musicLoop);
+    shouldLoop = false;
+  } else {
+    runFunctionAtBPM(savedParams[0], PlayMusic, savedParams[1],savedParams[2])
+  }
 });
